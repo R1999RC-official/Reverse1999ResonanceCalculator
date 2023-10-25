@@ -64,8 +64,8 @@
         </el-col>
         <el-col :span="20">
           <ResoTable v-if="characterAndLevelSelected" :data="sol_data">
-          </ResoTable
-        ></el-col>
+          </ResoTable>
+        </el-col>
       </el-row>
     </el-main>
   </el-container>
@@ -144,12 +144,12 @@ const getBoardSize = async (level) => {
 
 const startCalc = async () => {
   sol_data.value = [];
-  window.API.startCalc(blocks_use_count, toRaw(board_size.value));
+  window.API.startCalcFakeSol(blocks_use_count, toRaw(board_size.value));
   calc_state.value = true;
 };
 
 const stopCalc = async () => {
-  window.API.stopCalc();
+  window.API.stopCalcFakeSol();
   calc_state.value = false;
 };
 
@@ -163,21 +163,24 @@ onMounted(async () => {
   await readCharacterList();
 });
 
-window.API.onSolution((_event, sol) => {
-  const props = sol
-    .map((block) => blocks_data_map[block[0]])
-    .reduce((acc, cur) => {
-      console.log(cur);
-      cur.forEach((prop) => {
-        acc[prop.name] = (acc[prop.name] ?? 0) + prop.value;
-      });
-      return acc;
-    }, {});
-  props.sol = sol;
+window.API.onFakeSol((_event, sol) => {
+  const props = Object.keys(sol).reduce((acc, cur) => {
+    blocks_data_map[cur].forEach((prop) => {
+      acc[prop.name] =
+        (acc[prop.name] ?? 0) +
+        prop.value * (Math.min(sol[cur], 3) + Math.max(sol[cur] - 3, 0) * 0.3);
+    });
+    return acc;
+  }, {});
+  props.blocks = sol;
+  props.sol = null;
   props.board_size = toRaw(board_size.value);
   props.id = sol_data.value.length;
   sol_data.value.push(props);
-  console.log(props);
+});
+
+window.API.onSolution((_event, sol, id) => {
+  sol_data.value[id].sol = sol;
 });
 
 const filterCharacters = (e) => {

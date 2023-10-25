@@ -6,6 +6,7 @@ from collections import Counter
 from multiset import *
 from dlx import DLX
 from threading import Semaphore
+from itertools import combinations, product
 
 block_dict = {
     "o": "11/11",
@@ -23,6 +24,23 @@ block_dict = {
     "v": "11/10",
     "T": "111/010/010",
     "U": "101/111",
+}
+block_count = {
+    "o": 4,
+    "l": 4,
+    "S": 4,
+    "z": 4,
+    "L": 4,
+    "J": 4,
+    "t": 4,
+    "d_diam": 1,
+    "d_tri": 1,
+    "i": 2,
+    "x": 5,
+    "Z": 5,
+    "v": 3,
+    "T": 5,
+    "U": 5,
 }
 
 
@@ -136,6 +154,22 @@ def create_block_rows(
     return rows, rows_name
 
 
+def create_fake_solutions(board_row: int, board_col: int, reso_blocks: list):
+    reso_block_kvps = [
+        [(block, i) for i in range(reso_blocks[block] + 1)] for block in reso_blocks
+    ]
+    for possible_reso_blocks in product(*reversed(reso_block_kvps)):
+        possible_reso_blocks_dict = dict(possible_reso_blocks)
+        current_block_count = sum(
+            block_count[block] * possible_reso_blocks_dict[block]
+            for block in possible_reso_blocks_dict
+        )
+        if current_block_count == board_col * board_row:
+            yield possible_reso_blocks_dict
+        pass
+    pass
+
+
 def create_matrix(board_row: int, board_col: int, reso_blocks: list):
     block_list_uncompressed = [
         i for i in reso_blocks for j in range(int(reso_blocks[i]))
@@ -173,10 +207,12 @@ def create_matrix(board_row: int, board_col: int, reso_blocks: list):
     return dlx
 
 
-def solve(dlx, count):
+def solve(dlx, max_count):
     sol_set = {}
-
+    count = 0
     for sol_idx in dlx.solve():
+        if count >= max_count:
+            break
         dlx.s.acquire()
         if dlx.stop:
             return
@@ -186,7 +222,7 @@ def solve(dlx, count):
         if sol_blocks not in sol_set:
             sol_set[sol_blocks] = 1
             yield sol
-
+            count += 1
         else:
             sol_set[sol_blocks] += 1
 

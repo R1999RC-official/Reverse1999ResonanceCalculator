@@ -33,9 +33,12 @@ contextBridge.exposeInMainWorld("API", {
   getCharacterList: () => ipcRenderer.invoke("GET_CHARACTER_LIST"),
   getCharacterData: (name) => ipcRenderer.invoke("GET_CHARACTER_DATA", name),
   getBoardSize: (level) => ipcRenderer.invoke("GET_BOARD_SIZE", level),
-  startCalc: (blocks, board_size) =>
-    ipcRenderer.invoke("START_CALC", blocks, board_size),
-  stopCalc: () => ipcRenderer.invoke("STOP_CALC"),
+  startCalcFakeSol: (blocks, board_size) =>
+    ipcRenderer.invoke("START_CALC_FAKE", blocks, board_size),
+  stopCalcFakeSol: () => ipcRenderer.invoke("STOP_CALC_FAKE"),
+  onFakeSol: (callback) => ipcRenderer.on("FAKE_SOLUTION", callback),
+  startCalc: (blocks, board_size, id) =>
+    ipcRenderer.invoke("START_CALC", blocks, board_size, id),
   onSolution: (callback) => ipcRenderer.on("SOLUTION", callback),
   // we can also expose variables, not just functions
 });
