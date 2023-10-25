@@ -36,10 +36,14 @@ const start_calculate_fake = (event, blocks, board_size) => {
   childProcess.stderr.on("data", (data) => {
     console.error(`stderr: ${data}`);
   });
-
+  childProcess.on("spawn", () => {
+    app.mainWindow.send("FAKE_SOLUTION_STARTED");
+  });
   childProcess.on("close", (code) => {
+    app.mainWindow.send("FAKE_SOLUTION_FINISHED");
     console.log(`child process exited with code ${code}`);
   });
+  //childProcess.on()
 };
 
 const stop_calc_fake = () => {

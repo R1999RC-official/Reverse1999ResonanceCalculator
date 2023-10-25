@@ -4,13 +4,6 @@ import demjson3
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
 
 
-def call_back(dlx, count):
-    for sol in solve(dlx, count):
-        print(sol)
-        return
-    print("unsolvable")
-
-
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("error")
@@ -24,13 +17,7 @@ if __name__ == "__main__":
         fake_solutions = create_fake_solutions(*board_size, blocks)
         for fake_solution in fake_solutions:
             print(fake_solution)
-            break
     else:
         dlx = create_matrix(*board_size, blocks)
         for sol in solve(dlx, 1):
             print(sol)
-    # pool = ThreadPoolExecutor(thread_name_prefix='test_thread')
-    #
-    # for dlx in matrices:
-    #     pool.submit(call_back, dlx, 1)
-    # pass

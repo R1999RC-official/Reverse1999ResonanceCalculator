@@ -63,7 +63,11 @@
           ></CharacterInfo>
         </el-col>
         <el-col :span="20">
-          <ResoTable v-if="characterAndLevelSelected" :data="sol_data">
+          <ResoTable
+            v-if="characterAndLevelSelected"
+            :data="sol_data"
+            @sort:data="sortData"
+          >
           </ResoTable>
         </el-col>
       </el-row>
@@ -82,6 +86,8 @@ import {
   provide,
   toRaw,
 } from "vue";
+
+import { TableV2SortOrder } from "element-plus";
 
 //import CharacterInfo from "./CharacterInfo.vue";
 import CharacterInfo from "./CharacterInfo.vue";
@@ -102,9 +108,11 @@ let blocks_data_map = {};
 let blocks_use_count = {};
 
 const sol_data = ref([]);
+const solutions = ref([]);
 
 provide("character_data", character_data);
 provide("blocks_data", blocks_data);
+provide("solutions", solutions);
 
 const readCharacterList = async () => {
   character_list_backup = await window.API.getCharacterList();
@@ -144,6 +152,7 @@ const getBoardSize = async (level) => {
 
 const startCalc = async () => {
   sol_data.value = [];
+  solutions.value = [];
   window.API.startCalcFakeSol(blocks_use_count, toRaw(board_size.value));
   calc_state.value = true;
 };
@@ -163,6 +172,9 @@ onMounted(async () => {
   await readCharacterList();
 });
 
+let buffer = [];
+let timer;
+
 window.API.onFakeSol((_event, sol) => {
   const props = Object.keys(sol).reduce((acc, cur) => {
     blocks_data_map[cur].forEach((prop) => {
@@ -175,13 +187,40 @@ window.API.onFakeSol((_event, sol) => {
   props.blocks = sol;
   props.sol = null;
   props.board_size = toRaw(board_size.value);
-  props.id = sol_data.value.length;
-  sol_data.value.push(props);
+  props.id = buffer.length;
+  buffer.push(props);
+});
+
+window.API.onFakeSolStart(() => {
+  buffer = [];
+  sol_data.value = [];
+  solutions.value = [];
+  timer = setInterval(() => {
+    sol_data.value = sol_data.value.concat(buffer.slice(sol_data.value.length));
+    solutions.value = Array(sol_data.value.length);
+  }, 1000);
+});
+
+window.API.onFakeSolFinish(() => {
+  sol_data.value = sol_data.value.concat(buffer.slice(sol_data.value.length));
+  solutions.value = Array(sol_data.value.length);
+  clearInterval(timer);
 });
 
 window.API.onSolution((_event, sol, id) => {
-  sol_data.value[id].sol = sol;
+  solutions.value[id] = sol;
 });
+
+const sortData = ({ key, order }) => {
+  sol_data.value.sort((a, b) => {
+    if (a[key] > b[key]) return 1;
+    if (a[key] < b[key]) return -1;
+    else return 0;
+  });
+  if (order == TableV2SortOrder.DESC) {
+    sol_data.value.reverse();
+  }
+};
 
 const filterCharacters = (e) => {
   if (e) {

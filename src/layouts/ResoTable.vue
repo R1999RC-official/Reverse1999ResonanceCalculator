@@ -74,31 +74,25 @@
         label="抗暴率(%)"
       ></el-table-column>
     </el-table>-->
-    <el-table-v2 :columns="columns" :data="data" :width="1200" :height="400">
+    <el-table-v2
+      :columns="columns"
+      :data="data"
+      :width="1200"
+      :height="600"
+      @column-sort="onSort"
+      v-model:sort-state="sortState"
+    >
     </el-table-v2>
   </el-card>
 </template>
 
-<script lang="jsx" setup>
-import { ref, computed } from "vue";
+<script setup>
+import { ref, computed, h, toRaw, watch } from "vue";
 import ResoImage from "./ResoImage.vue";
+import { ElPopover, ElButton, TableV2, TableV2SortOrder } from "element-plus";
 
 const props = defineProps(["data"]);
-
-const resoData = computed(() => {
-  props.data.forEach((i) => {
-    i.children = [
-      {
-        id: `${i.id}`,
-        detail: 1,
-        blocks: i.blocks,
-        sol: i.sol,
-        board_size: i.board_size,
-      },
-    ];
-  });
-  return props.data;
-});
+const emits = defineEmits(["sort:data"]);
 
 const columns = [
   {
@@ -106,111 +100,160 @@ const columns = [
     dataKey: "id",
     title: "ID",
     width: 80,
+    sortable: true,
   },
   {
     key: "hp",
     dataKey: "hp",
     title: "生命(%)",
     width: 100,
+    sortable: true,
   },
   {
     key: "hp_literal",
     dataKey: "hp_literal",
     title: "生命",
     width: 100,
+    sortable: true,
   },
   {
     key: "atk_literal",
     dataKey: "atk_literal",
     title: "攻击",
     width: 100,
+    sortable: true,
   },
   {
     key: "atk",
     dataKey: "atk",
     title: "攻击(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "r_def_literal",
     dataKey: "r_def_literal",
     title: "现实防御",
     width: 100,
+    sortable: true,
   },
   {
     key: "r_def",
     dataKey: "r_def",
     title: "现实防御(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "i_def_literal",
     dataKey: "i_def_literal",
     title: "精神防御",
     width: 100,
+    sortable: true,
   },
   {
     key: "i_def",
     dataKey: "i_def",
     title: "精神防御(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "dmg_bst",
     dataKey: "dmg_bst",
     title: "创伤加成(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "dmg_red",
     dataKey: "dmg_red",
     title: "受创减免(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "crit",
     dataKey: "crit",
     title: "暴击伤害(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "crit_def",
     dataKey: "crit_def",
     title: "暴击防御(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "crit_rate",
     dataKey: "crit_rate",
     title: "暴击率(%)",
     width: 60,
+    sortable: true,
   },
   {
     key: "crit_rate_def",
     dataKey: "crit_rate_def",
     title: "抗暴率(%)",
     width: 60,
+    sortable: true,
   },
-  // {
-  //   key: "show",
-  //   dataKey: "show",
-  //   title: "查看",
-  //   width: 60,
-  //   // TODO:cellRenderer: (data) => <ElPopover width="400"></ElPopover>,
-  //   // <el-popover placement="left" :width="400" trigger="click"></el-popover>
-  //   //   <template #reference>
-  //   //     <el-button>123</el-button>
-  //   //   </template>
-  //   //   <ResoImage
-  //   //     :blocks="props.rowData.blocks"
-  //   //     :solution="props.rowData.sol"
-  //   //     :w="props.rowData.board_size[1]"
-  //   //     :h="props.rowData.board_size[0]"
-  //   //     :id="props.rowData.id"
-  //   //   ></ResoImage>
-  //   // </el-popover>
-  // },
+  {
+    key: "show",
+    dataKey: "show",
+    title: "查看",
+    width: 60,
+    // TODO:
+    cellRenderer: (data) =>
+      h(
+        ElPopover,
+        {
+          trigger: "click",
+          width: "300px",
+          placement: "left",
+          onShow: () => {
+            if (data.rowData.sol == null) {
+              window.API.startCalc(
+                toRaw(data.rowData.blocks),
+                [
+                  toRaw(data.rowData.board_size[0]),
+                  toRaw(data.rowData.board_size[1]),
+                ],
+                toRaw(data.rowData.id)
+              );
+            }
+          },
+        },
+        {
+          reference: () => h(ElButton, () => "计算"),
+          default: () =>
+            h(ResoImage, {
+              blocks: data.rowData.blocks,
+              solution: data.rowData.sol,
+              w: data.rowData.board_size[1],
+              h: data.rowData.board_size[0],
+              id: data.rowData.id,
+            }),
+        }
+      ),
+  },
 ];
+
+const sortState = ref(
+  columns
+    .filter((i) => i.sortable)
+    .reduce((acc, cur) => {
+      acc[cur.key] = TableV2SortOrder.DESC;
+      return acc;
+    }, {})
+);
+const onSort = ({ key, order }) => {
+  emits("sort:data", { key, order });
+
+  sortState.value[key] = order;
+};
 </script>
 <style>
 .el-table-v2__row-depth-0 {

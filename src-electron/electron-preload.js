@@ -37,6 +37,10 @@ contextBridge.exposeInMainWorld("API", {
     ipcRenderer.invoke("START_CALC_FAKE", blocks, board_size),
   stopCalcFakeSol: () => ipcRenderer.invoke("STOP_CALC_FAKE"),
   onFakeSol: (callback) => ipcRenderer.on("FAKE_SOLUTION", callback),
+  onFakeSolStart: (callback) =>
+    ipcRenderer.on("FAKE_SOLUTION_STARTED", callback),
+  onFakeSolFinish: (callback) =>
+    ipcRenderer.on("FAKE_SOLUTION_FINISHED", callback),
   startCalc: (blocks, board_size, id) =>
     ipcRenderer.invoke("START_CALC", blocks, board_size, id),
   onSolution: (callback) => ipcRenderer.on("SOLUTION", callback),

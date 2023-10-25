@@ -8,21 +8,20 @@
 </template>
 
 <script setup>
-import { ref, toRaw, watch } from "vue";
+import { ref, toRaw, watch, inject } from "vue";
 import { url_safe_base64 } from "../utils/commonUtils";
+
+const solutions = inject("solutions");
 
 const props = defineProps(["blocks", "w", "h", "solution", "id"]);
 const img_src = ref("");
 
-window.API.startCalc(
-  toRaw(props.blocks),
-  [toRaw(props.h), toRaw(props.w)],
-  toRaw(props.id)
-);
-
 watch(
-  () => props.solution,
+  () => solutions.value[props.id],
   () => {
+    if (solutions.value[props.id] == null) {
+      return;
+    }
     const block_width = 56;
 
     const canvasWidth = props.w * block_width;
@@ -34,7 +33,7 @@ watch(
     const ctx = canvas.getContext("2d");
 
     Promise.all(
-      props.solution.map((block) => {
+      solutions.value[props.id].map((block) => {
         return new Promise((resolve, reject) => {
           const shape = block[0];
           const row = block[1];
@@ -52,6 +51,7 @@ watch(
     ).then(() => {
       img_src.value = canvas.toDataURL();
     });
-  }
+  },
+  { deep: true }
 );
 </script>
