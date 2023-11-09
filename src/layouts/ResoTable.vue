@@ -74,25 +74,56 @@
         label="抗暴率(%)"
       ></el-table-column>
     </el-table>-->
-    <el-table-v2
-      :columns="columns"
-      :data="data"
-      :width="1200"
-      :height="600"
-      @column-sort="onSort"
-      v-model:sort-state="sortState"
+    <el-tag
+      v-for="tag in dynamicTags"
+      :key="tag.key"
+      class="mx-1"
+      closable
+      :disable-transitions="false"
+      @close="handleClose(tag)"
     >
+      {{ tag.title }}</el-tag
+    >
+    <el-select
+      v-if="inputVisible"
+      ref="InputRef"
+      v-model="inputValue"
+      class="ml-1 w-20"
+      size="small"
+      @change="selectChange"
+    >
+      <el-option
+        v-for="option in options"
+        :key="option.key"
+        :label="option.title"
+        :value="option"
+      ></el-option>
+    </el-select>
+    <el-button
+      v-else
+      class="button-new-tag ml-1"
+      size="small"
+      @click="showInput"
+      >+ 排序</el-button
+    >
+    <el-table-v2 :columns="columns" :data="data" :width="1200" :height="600">
     </el-table-v2>
   </el-card>
 </template>
 
 <script setup>
-import { ref, computed, h, toRaw, watch } from "vue";
+import { ref, computed, h, toRaw, watch, nextTick, onMounted } from "vue";
 import ResoImage from "./ResoImage.vue";
 import { ElPopover, ElButton, TableV2, TableV2SortOrder } from "element-plus";
 
 const props = defineProps(["data"]);
-const emits = defineEmits(["sort:data"]);
+
+const inputValue = ref("");
+const inputVisible = ref(false);
+const InputRef = ref();
+const dynamicTags = ref([]);
+
+const dataSorted = ref([]);
 
 const columns = [
   {
@@ -241,19 +272,64 @@ const columns = [
   },
 ];
 
-const sortState = ref(
-  columns
-    .filter((i) => i.sortable)
-    .reduce((acc, cur) => {
-      acc[cur.key] = TableV2SortOrder.DESC;
-      return acc;
-    }, {})
-);
-const onSort = ({ key, order }) => {
-  emits("sort:data", { key, order });
+let options_backup = columns.slice(1, -1);
+const options = ref(options_backup);
 
-  sortState.value[key] = order;
+watch(
+  () => props.data,
+  () => {
+    dataSorted.value = props.data;
+    sortByTags();
+  }
+);
+
+watch(
+  dynamicTags,
+  () => {
+    options.value = options_backup.filter((i) => {
+      return !dynamicTags.value.some((j) => j.title == i.title);
+    });
+
+    sortByTags();
+  },
+  { deep: true }
+);
+
+const sortByTags = () => {
+  dataSorted.value.sort((a, b) => {
+    let tag;
+    for (tag of dynamicTags.value) {
+      let tag_name = tag.key;
+      if (a[tag_name] < b[tag_name]) return 1;
+      else if (a[tag_name] > b[tag_name]) return -1;
+      else continue;
+    }
+    if (a.id < b.id) return -1;
+    else return 1;
+  });
 };
+
+const handleClose = (tag) => {
+  dynamicTags.value.splice(dynamicTags.value.indexOf(tag), 1);
+};
+
+const showInput = () => {
+  inputVisible.value = true;
+  nextTick(() => {
+    InputRef.value.focus();
+  });
+};
+
+const selectChange = (e) => {
+  if (inputValue.value) {
+    dynamicTags.value.push(inputValue.value);
+  }
+  inputVisible.value = false;
+  inputValue.value = "";
+};
+onMounted(() => {
+  sortByTags();
+});
 </script>
 <style>
 .el-table-v2__row-depth-0 {
@@ -264,5 +340,8 @@ const onSort = ({ key, order }) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.mx-1 {
+  margin: 0 0.25rem;
 }
 </style>

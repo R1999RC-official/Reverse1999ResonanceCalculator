@@ -63,11 +63,7 @@
           ></CharacterInfo>
         </el-col>
         <el-col :span="20">
-          <ResoTable
-            v-if="characterAndLevelSelected"
-            :data="sol_data"
-            @sort:data="sortData"
-          >
+          <ResoTable v-if="characterAndLevelSelected" :data="sol_data">
           </ResoTable>
         </el-col>
       </el-row>
@@ -107,7 +103,10 @@ const blocks_data = ref({});
 let blocks_data_map = {};
 let blocks_use_count = {};
 
+//记录每个ID对应的解的数值
 const sol_data = ref([]);
+
+//记录每个ID对应的解的块坐标以及角度
 const solutions = ref([]);
 
 provide("character_data", character_data);
@@ -173,7 +172,6 @@ onMounted(async () => {
 });
 
 let buffer = [];
-let timer;
 
 window.API.onFakeSol((_event, sol) => {
   const props = Object.keys(sol).reduce((acc, cur) => {
@@ -195,32 +193,17 @@ window.API.onFakeSolStart(() => {
   buffer = [];
   sol_data.value = [];
   solutions.value = [];
-  timer = setInterval(() => {
-    sol_data.value = sol_data.value.concat(buffer.slice(sol_data.value.length));
-    solutions.value = Array(sol_data.value.length);
-  }, 1000);
 });
 
 window.API.onFakeSolFinish(() => {
   sol_data.value = sol_data.value.concat(buffer.slice(sol_data.value.length));
   solutions.value = Array(sol_data.value.length);
-  clearInterval(timer);
+  calc_state.value = false;
 });
 
 window.API.onSolution((_event, sol, id) => {
   solutions.value[id] = sol;
 });
-
-const sortData = ({ key, order }) => {
-  sol_data.value.sort((a, b) => {
-    if (a[key] > b[key]) return 1;
-    if (a[key] < b[key]) return -1;
-    else return 0;
-  });
-  if (order == TableV2SortOrder.DESC) {
-    sol_data.value.reverse();
-  }
-};
 
 const filterCharacters = (e) => {
   if (e) {
