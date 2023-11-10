@@ -59,7 +59,6 @@
             :name="character"
             :level="reso_level"
             v-if="characterAndLevelSelected"
-            @update-use-count="updateUseCount"
           ></CharacterInfo>
         </el-col>
         <el-col :span="20">
@@ -132,6 +131,9 @@ const selectResoLevel = async (level) => {
   blocks_data.value = character_data.value.resonate.filter(
     (i) => i.level == level
   )[0].blocks;
+  blocks_data.value.forEach((i) => {
+    blocks_use_count[i.shape] = parseInt(i.count);
+  });
   blocks_data_map = {};
   blocks_data.value
     .map((block_data) => ({
@@ -139,10 +141,6 @@ const selectResoLevel = async (level) => {
     }))
     .reduce((acc, obj) => Object.assign(acc, obj), blocks_data_map);
   await getBoardSize(level);
-};
-
-const updateUseCount = (shape, use_count) => {
-  blocks_use_count[shape] = use_count;
 };
 
 const getBoardSize = async (level) => {

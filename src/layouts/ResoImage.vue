@@ -1,7 +1,7 @@
 <template>
   <el-image
+    v-loading="loading"
     :src="img_src"
-    :v-show="img_src != ''"
     :width="props.w * 56"
     :height="props.h * 56"
   />
@@ -15,6 +15,7 @@ const solutions = inject("solutions");
 
 const props = defineProps(["blocks", "w", "h", "solution", "id"]);
 const img_src = ref("");
+const loading = ref("true");
 
 watch(
   () => solutions.value[props.id],
@@ -50,6 +51,7 @@ watch(
       })
     ).then(() => {
       img_src.value = canvas.toDataURL();
+      loading.value = false;
     });
   },
   { deep: true }

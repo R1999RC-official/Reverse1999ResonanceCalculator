@@ -9,16 +9,7 @@
     </div>
 
     <!--块-->
-    <div>
-      <BlockInfo
-        v-for="(block, key) in blocks_data"
-        :shape="block.shape"
-        :count="block.count"
-        :level="block.level"
-        :key="key"
-        @update-use-count="updateUseCount"
-      ></BlockInfo>
-    </div>
+    <div></div>
   </el-card>
 </template>
 
@@ -26,18 +17,10 @@
 //import { defineProps } from "vue";
 
 import { ref, onMounted, watch, onUpdated, inject, computed } from "vue";
-import BlockInfo from "./BlockInfo.vue";
 
 const props = defineProps(["name", "level"]);
-const emits = defineEmits(["updateUseCount"]);
 
 const img_src = computed(() => "");
-
-const blocks_data = inject("blocks_data");
-
-const updateUseCount = (shape, use_count) => {
-  emits("updateUseCount", shape, use_count);
-};
 
 //watch(level, fetchCharacterData);
 </script>

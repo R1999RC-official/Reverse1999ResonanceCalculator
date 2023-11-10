@@ -131,105 +131,90 @@ const columns = [
     dataKey: "id",
     title: "ID",
     width: 80,
-    sortable: true,
   },
   {
     key: "hp",
     dataKey: "hp",
     title: "生命(%)",
     width: 100,
-    sortable: true,
   },
   {
     key: "hp_literal",
     dataKey: "hp_literal",
     title: "生命",
     width: 100,
-    sortable: true,
   },
   {
     key: "atk_literal",
     dataKey: "atk_literal",
     title: "攻击",
     width: 100,
-    sortable: true,
   },
   {
     key: "atk",
     dataKey: "atk",
     title: "攻击(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "r_def_literal",
     dataKey: "r_def_literal",
     title: "现实防御",
     width: 100,
-    sortable: true,
   },
   {
     key: "r_def",
     dataKey: "r_def",
     title: "现实防御(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "i_def_literal",
     dataKey: "i_def_literal",
     title: "精神防御",
     width: 100,
-    sortable: true,
   },
   {
     key: "i_def",
     dataKey: "i_def",
     title: "精神防御(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "dmg_bst",
     dataKey: "dmg_bst",
     title: "创伤加成(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "dmg_red",
     dataKey: "dmg_red",
     title: "受创减免(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "crit",
     dataKey: "crit",
     title: "暴击伤害(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "crit_def",
     dataKey: "crit_def",
     title: "暴击防御(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "crit_rate",
     dataKey: "crit_rate",
     title: "暴击率(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "crit_rate_def",
     dataKey: "crit_rate_def",
     title: "抗暴率(%)",
     width: 60,
-    sortable: true,
   },
   {
     key: "show",
@@ -340,6 +325,9 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.el-image {
+  background: linear-gradient(45deg, #eeeeee, #cccccc);
 }
 .mx-1 {
   margin: 0 0.25rem;
